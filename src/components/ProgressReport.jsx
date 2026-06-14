@@ -8,13 +8,22 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   Filler,
   Tooltip,
   Legend,
 } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
-
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  LineController,
+  Filler,
+  Tooltip,
+  Legend
+);
 function StatCard({ value, label, color }) {
   return (
     <div style={{ textAlign: 'center', padding: 14, background: 'var(--color-background-secondary)', borderRadius: 8 }}>
