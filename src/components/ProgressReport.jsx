@@ -2,6 +2,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useStudentStore } from '../store/studentStore';
 import { generateProgressReport } from '../lib/api';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 function StatCard({ value, label, color }) {
   return (
@@ -23,15 +35,12 @@ export default function ProgressReport() {
   const overallMastery = Math.round(
     Object.values(skills).reduce((s, v) => s + v.accuracy, 0) / Object.keys(skills).length * 100
   );
-  const overallAccuracy = Math.round(
-    Object.values(skills).reduce((s, v) => s + v.accuracy, 0) / Object.keys(skills).length * 100
-  );
 
   useEffect(() => {
     if (!chartRef.current) return;
     if (chartInstance.current) { chartInstance.current.destroy(); }
     const ctx = chartRef.current.getContext('2d');
-    chartInstance.current = new window.Chart(ctx, {
+    chartInstance.current = new ChartJS(ctx, {
       type: 'line',
       data: {
         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -48,7 +57,7 @@ export default function ProgressReport() {
           },
           {
             label: 'Goal',
-            data: [student.satGoal, student.satGoal, student.satGoal, student.satGoal, student.satGoal, student.satGoal, student.satGoal],
+            data: Array(7).fill(student.satGoal),
             borderColor: '#E24B4A',
             borderDash: [4, 4],
             pointRadius: 0,
@@ -72,7 +81,7 @@ export default function ProgressReport() {
   async function fetchAIReport() {
     setLoadingReport(true);
     try {
-      const report = await generateProgressReport(student, skills, []);
+      const report = await generateProgressReport(student, skills);
       setAiReport(report);
     } catch {
       setAiReport(null);
@@ -91,34 +100,35 @@ export default function ProgressReport() {
 
   return (
     <div>
-      {/* Summary stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
         <StatCard value={`${overallMastery}%`} label="Overall mastery" color="#5340c8" />
         <StatCard value={student.totalQuestions} label="Questions answered" />
-        <StatCard value={`${overallAccuracy}%`} label="Accuracy rate" color="#3B6D11" />
+        <StatCard value={`${overallMastery}%`} label="Accuracy rate" color="#3B6D11" />
         <StatCard value={`${Math.round(student.totalStudyMinutes / 60 * 10) / 10}h`} label="Total study time" />
       </div>
 
-      {/* Score chart */}
+      {/* Chart */}
       <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 16, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 500 }}>SAT score projection — this week</div>
           <div style={{ display: 'flex', gap: 12, fontSize: 11 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 10, height: 3, background: '#5340c8', borderRadius: 2, display: 'inline-block' }} />Projection</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 10, height: 0, border: '1.5px dashed #E24B4A', display: 'inline-block' }} />Goal {student.satGoal}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 10, height: 3, background: '#5340c8', borderRadius: 2, display: 'inline-block' }} />Projection
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 10, height: 0, border: '1.5px dashed #E24B4A', display: 'inline-block' }} />Goal {student.satGoal}
+            </span>
           </div>
         </div>
         <div style={{ position: 'relative', height: 180 }}>
-          <canvas ref={chartRef} role="img" aria-label={`SAT score projection over the week, trending from 1100 to ${student.satProjection}`}>
-            SAT score trend this week
-          </canvas>
+          <canvas ref={chartRef} />
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
         {/* Skill breakdown */}
         <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 12 }}>Skill breakdown (all {Object.keys(skills).length} skills)</div>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 12 }}>Skill breakdown</div>
           <div style={{ maxHeight: 280, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
             {Object.entries(skills)
               .sort((a, b) => a[1].accuracy - b[1].accuracy)
@@ -138,8 +148,8 @@ export default function ProgressReport() {
           </div>
         </div>
 
-        {/* Strengths and gaps summary */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Strengths */}
           <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 14, flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 10 }}>Top strengths</div>
             {strongSkills.slice(0, 3).map(([name, s]) => (
@@ -149,6 +159,7 @@ export default function ProgressReport() {
               </div>
             ))}
           </div>
+          {/* Gaps */}
           <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 14, flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 10 }}>Priority gaps</div>
             {weakSkills.slice(0, 3).map(([name, s]) => (
@@ -161,18 +172,14 @@ export default function ProgressReport() {
         </div>
       </div>
 
-      {/* AI-generated detailed report */}
+      {/* AI Report */}
       <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 13, fontWeight: 500 }}>
             <i className="ti ti-brain" aria-hidden="true" /> AI-generated detailed analysis
           </div>
           {!aiReport && (
-            <button
-              onClick={fetchAIReport}
-              disabled={loadingReport}
-              style={{ padding: '6px 14px', background: '#5340c8', color: 'white', border: 'none', borderRadius: 8, cursor: loadingReport ? 'default' : 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: loadingReport ? 0.7 : 1 }}
-            >
+            <button onClick={fetchAIReport} disabled={loadingReport} style={{ padding: '6px 14px', background: '#5340c8', color: 'white', border: 'none', borderRadius: 8, cursor: loadingReport ? 'default' : 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: loadingReport ? 0.7 : 1 }}>
               <i className={`ti ${loadingReport ? 'ti-loader' : 'ti-sparkles'}`} aria-hidden="true" />
               {loadingReport ? 'Analyzing...' : 'Generate AI Report'}
             </button>
@@ -182,7 +189,7 @@ export default function ProgressReport() {
         {!aiReport && !loadingReport && (
           <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--color-text-secondary)', fontSize: 13 }}>
             <div style={{ fontSize: 28, marginBottom: 10 }}>📊</div>
-            Click "Generate AI Report" to get a personalized analysis of your progress, including specific recommendations for the next week.
+            Click "Generate AI Report" to get a personalized analysis with specific recommendations.
           </div>
         )}
 
