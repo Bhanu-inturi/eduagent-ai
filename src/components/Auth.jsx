@@ -1,10 +1,10 @@
 // src/components/Auth.jsx
-// Login and Signup screens — localStorage-based for hackathon demo
-// Replace with Firebase/Supabase for production
 import React, { useState } from 'react';
 
+const DEMO_EMAIL = 'demo@eduagent.ai';
+const DEMO_PASSWORD = 'demo123';
 
-function AuthLeft({ bg, title, tagline, stats }) {
+function AuthLeft({ bg, tagline, stats }) {
   return (
     <div style={{ width: 240, background: bg, padding: '32px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
       <div>
@@ -27,7 +27,7 @@ function AuthLeft({ bg, title, tagline, stats }) {
 
 export function LoginScreen({ onLogin, onSwitchToSignup }) {
   const [email, setEmail] = useState('demo@eduagent.ai');
-const [password, setPassword] = useState('demo123');
+  const [password, setPassword] = useState('demo123');
   const [error, setError] = useState('');
 
   function handleLogin() {
@@ -39,13 +39,13 @@ const [password, setPassword] = useState('demo123');
       setError('Password must be at least 6 characters.');
       return;
     }
-    localStorage.setItem('eduagent_user', JSON.stringify({ 
-      email, 
-      name: email.split('@')[0], 
-      grade: 10, 
-      satGoal: 1400 
-    }));
-    onLogin({ email, name: email.split('@')[0], grade: 10, satGoal: 1400 });
+
+    const isDemo = email.toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD;
+    const name = isDemo ? 'Demo Student' : email.split('@')[0];
+
+    const user = { email, name, grade: 10, satGoal: 1400, isDemo };
+    localStorage.setItem('eduagent_user', JSON.stringify(user));
+    onLogin(user);
   }
 
   return (
@@ -60,14 +60,30 @@ const [password, setPassword] = useState('demo123');
         <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 28 }}>Sign in to continue your SAT prep</p>
 
         <label style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 5 }}>Email</label>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="your@email.com" style={{ width: '100%', padding: '9px 12px', border: '0.5px solid var(--color-border-secondary)', borderRadius: 8, fontSize: 13, marginBottom: 14, background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }} />
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          placeholder="your@email.com"
+          style={{ width: '100%', padding: '9px 12px', border: '0.5px solid var(--color-border-secondary)', borderRadius: 8, fontSize: 13, marginBottom: 14, background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}
+        />
 
         <label style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 5 }}>Password</label>
-        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" onKeyDown={(e) => e.key === 'Enter' && handleLogin()} style={{ width: '100%', padding: '9px 12px', border: '0.5px solid var(--color-border-secondary)', borderRadius: 8, fontSize: 13, marginBottom: error ? 8 : 20, background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }} />
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          placeholder="••••••••"
+          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          style={{ width: '100%', padding: '9px 12px', border: '0.5px solid var(--color-border-secondary)', borderRadius: 8, fontSize: 13, marginBottom: error ? 8 : 20, background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}
+        />
 
         {error && <p style={{ fontSize: 12, color: '#A32D2D', marginBottom: 14 }}>{error}</p>}
 
-        <button onClick={handleLogin} style={{ width: '100%', padding: 10, background: '#5340c8', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+        <button
+          onClick={handleLogin}
+          style={{ width: '100%', padding: 10, background: '#5340c8', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+        >
           Sign in
         </button>
 
@@ -78,7 +94,11 @@ const [password, setPassword] = useState('demo123');
           </span>
         </p>
 
-        
+        {/* Demo hint for judges */}
+        <div style={{ marginTop: 20, padding: '10px 12px', background: 'var(--color-background-secondary)', borderRadius: 8, fontSize: 11, color: 'var(--color-text-secondary)', textAlign: 'center' }}>
+          <strong>Demo:</strong> demo@eduagent.ai / demo123
+          <br />or sign up with any email for a fresh start
+        </div>
       </div>
     </div>
   );
@@ -94,7 +114,7 @@ export function SignupScreen({ onSignup, onSwitchToLogin }) {
   function handleSignup() {
     if (!name.trim() || !email.trim()) { setError('Please fill in your name and email.'); return; }
     if (!email.includes('@')) { setError('Please enter a valid email address.'); return; }
-    const user = { email, name, grade: parseInt(grade), satGoal: parseInt(goal) };
+    const user = { email, name, grade: parseInt(grade), satGoal: parseInt(goal), isDemo: false };
     localStorage.setItem('eduagent_user', JSON.stringify(user));
     onSignup(user);
   }
@@ -116,7 +136,13 @@ export function SignupScreen({ onSignup, onSwitchToLogin }) {
         ].map((f) => (
           <div key={f.label} style={{ marginBottom: 14 }}>
             <label style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 5 }}>{f.label}</label>
-            <input value={f.value} onChange={(e) => f.set(e.target.value)} type={f.type} placeholder={f.placeholder} style={{ width: '100%', padding: '9px 12px', border: '0.5px solid var(--color-border-secondary)', borderRadius: 8, fontSize: 13, background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }} />
+            <input
+              value={f.value}
+              onChange={(e) => f.set(e.target.value)}
+              type={f.type}
+              placeholder={f.placeholder}
+              style={{ width: '100%', padding: '9px 12px', border: '0.5px solid var(--color-border-secondary)', borderRadius: 8, fontSize: 13, background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}
+            />
           </div>
         ))}
 
@@ -137,7 +163,10 @@ export function SignupScreen({ onSignup, onSwitchToLogin }) {
 
         {error && <p style={{ fontSize: 12, color: '#A32D2D', marginBottom: 10 }}>{error}</p>}
 
-        <button onClick={handleSignup} style={{ width: '100%', padding: 10, background: '#1D9E75', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 14 }}>
+        <button
+          onClick={handleSignup}
+          style={{ width: '100%', padding: 10, background: '#1D9E75', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 14 }}
+        >
           Create free account
         </button>
 

@@ -1,6 +1,7 @@
 // src/App.jsx — full app with auth + all screens
 import React, { useState, useEffect } from 'react';
 import { LoginScreen, SignupScreen } from './components/Auth';
+import { useStudentStore } from './store/studentStore';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Tutor from './components/Tutor';
@@ -36,8 +37,39 @@ export default function App() {
     }
   }, []);
 
-  function handleLogin(user) { setCurrentUser(user); setAuthState('app'); }
-  function handleSignup(user) { setCurrentUser(user); setAuthState('app'); }
+  function handleLogin(user) {
+  setCurrentUser(user);
+  setAuthState('app');
+  if (user.isDemo) {
+    useStudentStore.getState().loadDemoData();
+  } else {
+    useStudentStore.getState().updateStudent({
+      name: user.name,
+      grade: user.grade,
+      satGoal: user.satGoal,
+      satProjection: 800,
+      streakDays: 0,
+      totalQuestions: 0,
+      totalStudyMinutes: 0,
+      isDemo: false,
+    });
+  }
+}
+
+function handleSignup(user) {
+  setCurrentUser(user);
+  setAuthState('app');
+  useStudentStore.getState().updateStudent({
+    name: user.name,
+    grade: user.grade,
+    satGoal: user.satGoal,
+    satProjection: 800,
+    streakDays: 0,
+    totalQuestions: 0,
+    totalStudyMinutes: 0,
+    isDemo: false,
+  });
+}
   function handleLogout() { localStorage.removeItem('eduagent_user'); setAuthState('login'); setCurrentUser(null); }
 
   if (authState === 'login') return <LoginScreen onLogin={handleLogin} onSwitchToSignup={() => setAuthState('signup')} />;

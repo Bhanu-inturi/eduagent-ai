@@ -138,7 +138,7 @@ export default function PeerStudyRoom() {
         </div>
         <div>
           <div style={{ fontSize: 13, fontWeight: 500, color: '#26215C' }}>{topic.label} — Study Room</div>
-          <div style={{ fontSize: 11, color: '#534AB7', marginTop: 1 }}>I.Bhanu sri + Alex Kim + AI Tutor (Groq)</div>
+          <div style={{ fontSize: 11, color: '#534AB7', marginTop: 1 }}>demo + Alex Kim + AI Tutor (Groq)</div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#3B6D11', background: '#EAF3DE', padding: '3px 8px', borderRadius: 6, fontWeight: 500 }}>
           <span style={{ width:5, height:5, background:'#639922', borderRadius:'50%', display:'inline-block' }} /> Live

@@ -14,7 +14,7 @@ const SUGGESTION_CHIPS = [
 ];
 
 const LANG_SYSTEM_ES = `Eres EduAgent, un tutor experto de SAT usando el método socrático. 
-Estudiante: I.Bhanu sri, Grado 10. Meta: 1400/1600. Proyección actual: 1180/1600.
+Estudiante: demo, Grado 10. Meta: 1400/1600. Proyección actual: 1180/1600.
 Áreas débiles: Funciones Cuadráticas (30%), Interpretación de Datos (40%).
 REGLAS: Respuestas cortas (3-5 oraciones). Haz preguntas guía antes de dar respuestas. Responde SIEMPRE en español.`;
 
