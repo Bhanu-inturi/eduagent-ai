@@ -164,6 +164,21 @@ export const useStudentStore = create(
         completedTasks: {},
       }),
     }),
+    resetToFresh: (name, grade, satGoal) => set({
+  student: {
+    name,
+    grade,
+    satGoal,
+    satProjection: 800,
+    streakDays: 0,
+    totalQuestions: 0,
+    totalStudyMinutes: 0,
+    isDemo: false,
+  },
+  skills: EMPTY_SKILLS,
+  completedTasks: {},
+  chatHistory: [],
+}),
     {
       name: 'eduagent-student',
       partialize: (state) => ({

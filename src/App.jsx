@@ -43,35 +43,31 @@ export default function App() {
   if (user.isDemo) {
     useStudentStore.getState().loadDemoData();
   } else {
-    useStudentStore.getState().updateStudent({
-      name: user.name,
-      grade: user.grade,
-      satGoal: user.satGoal,
-      satProjection: 800,
-      streakDays: 0,
-      totalQuestions: 0,
-      totalStudyMinutes: 0,
-      isDemo: false,
-    });
+    useStudentStore.getState().resetToFresh(user.name, user.grade, user.satGoal);
   }
 }
 
 function handleSignup(user) {
   setCurrentUser(user);
   setAuthState('app');
+  useStudentStore.getState().resetToFresh(user.name, user.grade, user.satGoal);
+}
+  function handleLogout() {
+  localStorage.removeItem('eduagent_user');
+  localStorage.removeItem('eduagent-student');
   useStudentStore.getState().updateStudent({
-    name: user.name,
-    grade: user.grade,
-    satGoal: user.satGoal,
+    name: 'Student',
+    grade: 10,
+    satGoal: 1400,
     satProjection: 800,
     streakDays: 0,
     totalQuestions: 0,
     totalStudyMinutes: 0,
     isDemo: false,
   });
+  setAuthState('login');
+  setCurrentUser(null);
 }
-  function handleLogout() { localStorage.removeItem('eduagent_user'); setAuthState('login'); setCurrentUser(null); }
-
   if (authState === 'login') return <LoginScreen onLogin={handleLogin} onSwitchToSignup={() => setAuthState('signup')} />;
   if (authState === 'signup') return <SignupScreen onSignup={handleSignup} onSwitchToLogin={() => setAuthState('login')} />;
 
